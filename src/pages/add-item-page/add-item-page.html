@@ -1,0 +1,23 @@
+<ion-content>
+  <div [hidden]="tryingToGetLocation">
+
+    <ion-list>
+
+      <ion-item>
+        <ion-label floating>Título</ion-label>
+        <ion-input type="text" [(ngModel)]="title"></ion-input>
+      </ion-item>
+
+
+    </ion-list>
+
+    <button full ion-button color="dark" (click)="saveItem()">Guardar Localización</button>
+  </div>
+
+  <div [hidden]="!tryingToGetLocation">
+    <ion-spinner paused="!tryingToGetLocation">
+    </ion-spinner>
+    <p class="spinner-text">...Guardando Datos...</p>
+  </div>
+
+</ion-content>

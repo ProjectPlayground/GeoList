@@ -40,9 +40,11 @@ export class MapPage {
         ]).then((result) => {
 
           let locations = result[1];
+          if (locations !== undefined) {
 
-          for (let location of locations) {
-            this.maps.addMarker(location.latitude, location.longitude);
+            for (let location of locations) {
+              this.maps.addMarker(location.lat, location.lng);
+            }
           }
 
         });

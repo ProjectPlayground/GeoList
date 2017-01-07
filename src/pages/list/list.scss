@@ -1,3 +1,28 @@
-page-list {
 
+ion-icon.add-icon.icon{
+    position: absolute !important;
+    font-size: 4em;
+      z-index: 10;
+
+  right: 0.4em;
+    color: #1abc9c;
+    &.icon-md.ion-md-add-circle{  
+        bottom: 1em;
+    }
+    &.icon-ios.ion-ios-add-circle{
+        bottom: 0.9em;
+    }
+    &.icon-wp.ion-ios-add-circle{  
+        bottom: 0;
+    }
+}
+
+page-list{
+    .empty-list{
+        text-align: center;
+    font-size: 2em;
+    font-family: monospace;
+    color: grey;
+    margin-top: 50%;
+    }
 }

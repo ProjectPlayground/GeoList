@@ -42,9 +42,9 @@ export class Position {
         }
         return position;
     }
-    setPosition(pos: any): void {
-        this.setLatitude(pos.latitude);
-        this.setLongitude(pos.longitude);
+    setPosition(lat: number, lng: number): void {
+        this.setLatitude(lat);
+        this.setLongitude(lng);
     }
 }
 

@@ -1,22 +1,28 @@
 <ion-header>
-
-  <ion-navbar color="secondary">
-    <ion-title>List</ion-title>
+  <ion-navbar>
+    <ion-title>Sitios de interés</ion-title>
   </ion-navbar>
-
 </ion-header>
 
-
 <ion-content>
-
-  <ion-list no-lines>
-    <ion-item *ngFor="let location of locations.data">
-      <ion-avatar item-left>
-        <ion-icon name="pin"></ion-icon>
-      </ion-avatar>
-      <h2>{{location.title}}</h2>
-      <p>{{location.distance}} km</p>
-    </ion-item>
+  <ion-list [hidden]="hideListOfItems" class="item-list">
+    <ion-item-sliding *ngFor="let item of items; let i = index" #slidingItem>
+      <ion-item>
+        <ion-avatar item-left>
+          <ion-icon name="pin"></ion-icon>
+        </ion-avatar>
+        <h2>{{item.title}}</h2>
+        <p>{{item.distance}} km</p>
+      </ion-item>
+      <ion-item-options side="right">
+        <button ion-button><ion-icon md="md-create" (click)="editItem(item)"></ion-icon>Edit</button>
+        <button ion-button color="danger" (click)="removeItem(i, slidingItem)"><ion-icon name="trash"></ion-icon>Delete</button>
+      </ion-item-options>
+    </ion-item-sliding>
   </ion-list>
+  <div [hidden]="!hideListOfItems">
+    <p class="empty-list">Aún no se han añadido localizaciones</p>
+  </div>
 
 </ion-content>
+<ion-icon (click)="addLocation()" class="add-icon" ios="ios-add-circle" md="md-add-circle"></ion-icon>

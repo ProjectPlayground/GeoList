@@ -89,10 +89,7 @@ export class GoogleMaps {
 
       Geolocation.getCurrentPosition().then((position) => {
 
-        // UNCOMMENT FOR NORMAL USE
-        //let latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-
-        let latLng = new google.maps.LatLng(40.713744, -74.009056);
+        let latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
 
         let mapOptions = {
           center: latLng,
@@ -171,5 +168,20 @@ export class GoogleMaps {
     this.markers.push(marker);
 
   }
+  deleteMarker(lat: number, lng: number): void {
+
+    console.log(this.markers);
+
+    // let latLng = new google.maps.LatLng(lat, lng);
+
+    // let marker = new google.maps.Marker({
+    //   map: this.map,
+    //   animation: google.maps.Animation.DROP,
+    //   position: latLng
+    // });
+
+    // this.markers.push(marker);
+  }
+
 
 }

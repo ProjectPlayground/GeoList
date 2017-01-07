@@ -2,49 +2,73 @@ import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 import 'rxjs/add/operator/map';
 import { Storage } from '@ionic/storage';
-import { Item, Position } from '../pages/clases/classes';
+import { Position } from '../pages/clases/classes';
+import { Data } from '../providers/data';
 
 
 
 @Injectable()
 export class Locations {
 
-  locations: Item[] = new Array<Item>();
   data: any;
   private usersLocation: Position;
-  constructor(public http: Http, public storage: Storage) {
-    this.storage.get("listOfLocations").then((locations) => {
-      if (locations != null) {
-        console.log(locations);
+  constructor(public http: Http, public storage: Storage, public dataService: Data) {
 
-      } else {
-        console.log('no dat');
 
+  }
+
+  updateList(item: any): any {
+    return new Promise(resolve => {
+
+      if (!this.data) {
+        this.data = [];
       }
+      this.data.push(item);
+      this.data = this.applyHaversine(this.data);
+      this.dataService.save(this.data);
+      this.data.sort((locationA, locationB) => {
+        return locationA.distance - locationB.distance;
+      });
+      resolve(this.data);
+    });
+
+  }
+  removeItemFromList(index: number): any {
+    return new Promise(resolve => {
+      this.data.splice(index, 1);
+      if (this.data.length > 0) {
+
+        this.dataService.save(this.data);
+      } else {
+        this.dataService.removeData();
+      }
+
+      resolve(this.data);
     })
   }
 
-
-
   load(position: any) {
-    console.log(position);
 
     this.usersLocation = new Position(position.lat, position.lng);
     if (this.data) {
       return Promise.resolve(this.data);
     }
-
     return new Promise(resolve => {
 
-      this.http.get('assets/data/locations.json').map(res => res.json()).subscribe(data => {
+      this.dataService.getData().then((data) => {
+        if (data != null) {
 
-        this.data = this.applyHaversine(data.locations);
+          this.data = JSON.parse(data);
+          this.data = this.applyHaversine(this.data);
+          this.data.sort((locationA, locationB) => {
+            return locationA.distance - locationB.distance;
+          });
 
-        this.data.sort((locationA, locationB) => {
-          return locationA.distance - locationB.distance;
-        });
+          resolve(this.data);
+        } else {
+          resolve(this.data);
 
-        resolve(this.data);
+        }
       });
 
     });
@@ -55,7 +79,7 @@ export class Locations {
 
     locations.map((location) => {
 
-      let placeLocation: Position = new Position(location.latitude, location.longitude);
+      let placeLocation: Position = new Position(location.lat, location.lng);
 
       location.distance = this.getDistanceBetweenPoints(
         this.usersLocation,
