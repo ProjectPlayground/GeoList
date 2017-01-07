@@ -168,19 +168,17 @@ export class GoogleMaps {
     this.markers.push(marker);
 
   }
-  deleteMarker(lat: number, lng: number): void {
-
-    console.log(this.markers);
-
-    // let latLng = new google.maps.LatLng(lat, lng);
-
-    // let marker = new google.maps.Marker({
-    //   map: this.map,
-    //   animation: google.maps.Animation.DROP,
-    //   position: latLng
-    // });
-
-    // this.markers.push(marker);
+  setMapOnAll(map) {
+    for (var i = 0; i < this.markers.length; i++) {
+      this.markers[i].setMap(map);
+    }
+  }
+  clearMarkers() {
+    this.setMapOnAll(null);
+  }
+  deleteMarkers() {
+    this.clearMarkers();
+    this.markers = [];
   }
 
 

@@ -4,6 +4,7 @@ import 'rxjs/add/operator/map';
 import { Storage } from '@ionic/storage';
 import { Position } from '../pages/clases/classes';
 import { Data } from '../providers/data';
+import { GoogleMaps } from '../providers/google-maps';
 
 
 
@@ -12,7 +13,7 @@ export class Locations {
 
   data: any;
   private usersLocation: Position;
-  constructor(public http: Http, public storage: Storage, public dataService: Data) {
+  constructor(public http: Http, public storage: Storage, public dataService: Data, public maps: GoogleMaps) {
 
 
   }
@@ -29,6 +30,9 @@ export class Locations {
       this.data.sort((locationA, locationB) => {
         return locationA.distance - locationB.distance;
       });
+
+      this.maps.addMarker(item.lat, item.lng);
+
       resolve(this.data);
     });
 
@@ -39,10 +43,13 @@ export class Locations {
       if (this.data.length > 0) {
 
         this.dataService.save(this.data);
+        this.maps.deleteMarkers();
+        for (let location of this.data) {
+          this.maps.addMarker(location.lat, location.lng);
+        }
       } else {
         this.dataService.removeData();
       }
-
       resolve(this.data);
     })
   }
@@ -63,7 +70,6 @@ export class Locations {
           this.data.sort((locationA, locationB) => {
             return locationA.distance - locationB.distance;
           });
-
           resolve(this.data);
         } else {
           resolve(this.data);
