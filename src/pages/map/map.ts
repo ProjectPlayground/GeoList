@@ -43,7 +43,7 @@ export class MapPage {
           if (locations !== undefined) {
 
             for (let location of locations) {
-              this.maps.addMarker(location.lat, location.lng);
+              this.maps.addMarker(location);
             }
           }
 

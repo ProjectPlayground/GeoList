@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
-import { NavController, ModalController } from 'ionic-angular';
+import { NavController, ModalController, ActionSheetController, AlertController } from 'ionic-angular';
 import { Locations } from '../../providers/locations';
 import { AddItemPage } from '../add-item-page/add-item-page'
 import { Data } from '../../providers/data';
-import { ItemSliding } from 'ionic-angular';
-import { Item } from '../clases/classes';
+import { Geo } from '../../providers/geolocation';
 
 
 
@@ -14,17 +13,26 @@ import { Item } from '../clases/classes';
 })
 export class ListPage {
 
-  private items: Item[] = new Array<Item>();
+  private items: any[] = new Array<any>();
   private numOfItems: number = 0;
   private hideListOfItems: boolean;
-  constructor(public navCtrl: NavController, public locations: Locations, public modalCtrl: ModalController, public dataService: Data) {
+  private tryingToGetLocation: boolean;
+
+  constructor(
+    public navCtrl: NavController,
+    public locations: Locations,
+    public modalCtrl: ModalController,
+    public alertCtrl: AlertController,
+    public dataService: Data,
+    public geo: Geo,
+    public actionSheetCtrl: ActionSheetController
+  ) {
     this.hideListOfItems = true;
+    this.tryingToGetLocation = false;
   }
 
   ngAfterViewInit() {
     let data = this.locations.data;
-    console.log(data);
-
     if (data !== undefined) {
       data.map((item) => {
         this.items.push(item);
@@ -42,10 +50,10 @@ export class ListPage {
     addModal.onDidDismiss((item) => {
       if (item) {
         if (item.title === undefined) {
-          item.title = "Localizacion " + this.numOfItems.toString();
+          item.title = "Ubicación " + this.numOfItems.toString();
         }
-        this.locations.updateList(item).then((data) => {
-          this.items = data;
+        this.locations.addItemToList(item).then((newList) => {
+          this.items = newList;
           this.numOfItems = this.items.length;
           this.hideListOfItems = false;
         })
@@ -55,15 +63,48 @@ export class ListPage {
     addModal.present();
 
   }
-  removeItem(index, slidingItem: ItemSliding): void {
-    this.locations.removeItemFromList(index).then((data) => {
-      this.items = data;
+  removeItem(index): void {
+    this.locations.removeItemFromList(index).then((newList) => {
+      this.items = newList;
       this.numOfItems = this.items.length;
       if (this.numOfItems == 0) {
         this.hideListOfItems = true;
       }
-      slidingItem.close();
     })
+  }
+  presentActionSheet(item: any, index: number) {
+    let actionSheet = this.actionSheetCtrl.create({
+      title: 'Selecciona una opción',
+      buttons: [
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          handler: () => {
+            this.removeItem(index);
+          }
+        },
+        {
+          text: 'Editar Alias',
+          handler: () => {
+            this.editAlias(item, index);
+          }
+        },
+        {
+          text: 'Regeolocalizar',
+          handler: () => {
+            this.editGeolocation(item, index);
+          }
+        },
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          handler: () => {
+          }
+        }
+      ]
+    });
+
+    actionSheet.present(actionSheet);
   }
   saveItem(item): void {
     this.items.push(item);
@@ -71,18 +112,93 @@ export class ListPage {
     this.dataService.save(this.items);
   }
 
-  editItem(item, slidingItem: ItemSliding): void {
-    let addModal = this.modalCtrl.create(AddItemPage, { "data": item });
-    addModal.onDidDismiss((item) => {
-      if (item) {
-        if (item.title === undefined) {
-          this.numOfItems++;
-          item.title = "Localizacion " + this.numOfItems.toString();
+
+  addItem(): void {
+    let prompt = this.alertCtrl.create({
+      title: 'Añadir Ubicación',
+      inputs: [
+        {
+          name: 'title',
+          placeholder: 'Titulo'
+        },
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+        },
+        {
+          text: 'Guardar',
+          handler: title => {
+            this.tryingToGetLocation = true;
+            this.geo.getGeolocation().then((ItemPosition) => {
+              this.tryingToGetLocation = false;
+              if (title.title === undefined) {
+                title.title = "Ubicación " + this.numOfItems.toString();
+              }
+              let item = {
+                title: title.title,
+                lat: ItemPosition.getLatitude(),
+                lng: ItemPosition.getLongitude()
+              };
+              this.locations.addItemToList(item).then((newList) => {
+                this.items = newList;
+                this.numOfItems = this.items.length;
+                this.hideListOfItems = false;
+              })
+            })
+          }
         }
-        this.saveItem(item);
-      }
+      ]
     });
-    addModal.present();
-    slidingItem.close();
+    prompt.present();
+
+  }
+
+  editGeolocation(item, index): void {
+    this.tryingToGetLocation = true;
+    this.geo.getGeolocation().then((location) => {
+      this.tryingToGetLocation = false;
+      item.lat = location.getLatitude();
+      item.lng = location.getLongitude();
+      console.log(item);
+      this.locations.updateItemFromList(item, index).then((newList) => {
+        this.items = newList;
+      })
+    })
+  }
+  editAlias(item, index): void {
+    let prompt = this.alertCtrl.create({
+      title: 'Modifica tu alias',
+      inputs: [
+        {
+          name: 'title',
+          placeholder: item.title
+        },
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+        },
+        {
+          text: 'Guardar',
+          handler: item => {
+            if (item) {
+              if (item.title === undefined) {
+                this.numOfItems++;
+                item.title = "Ubicación " + this.numOfItems.toString();
+              }
+              this.items[index].title = item.title;
+              this.locations.updateItemFromList(this.items[index], index)
+                .then((newList) => {
+                  this.items = newList;
+                });
+            }
+
+          }
+        }
+      ]
+    });
+    prompt.present();
+
   }
 }

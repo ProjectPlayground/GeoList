@@ -21,6 +21,7 @@ export class GoogleMaps {
 
   }
 
+
   init(mapElement: any, pleaseConnect: any): Promise<any> {
 
     this.mapElement = mapElement;
@@ -90,11 +91,32 @@ export class GoogleMaps {
       Geolocation.getCurrentPosition().then((position) => {
 
         let latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-
+        let styleArray = [
+          {
+            featureType: 'all',
+            stylers: [
+              { saturation: -80 }
+            ]
+          }, {
+            featureType: 'road.arterial',
+            elementType: 'geometry',
+            stylers: [
+              { hue: '#00ffee' },
+              { saturation: 50 }
+            ]
+          }, {
+            featureType: 'poi.business',
+            elementType: 'labels',
+            stylers: [
+              { visibility: 'off' }
+            ]
+          }
+        ];
         let mapOptions = {
           center: latLng,
           zoom: 15,
-          mapTypeId: google.maps.MapTypeId.ROADMAP
+          mapTypeId: google.maps.MapTypeId.ROADMAP,
+          styles: styleArray
         }
 
         this.map = new google.maps.Map(this.mapElement, mapOptions);
@@ -155,14 +177,20 @@ export class GoogleMaps {
 
   }
 
-  addMarker(lat: number, lng: number): void {
-
-    let latLng = new google.maps.LatLng(lat, lng);
+  addMarker(item): void {
+    var infowindow = new google.maps.InfoWindow({
+      content: item.title
+    });
+    let latLng = new google.maps.LatLng(item.lat, item.lng);
 
     let marker = new google.maps.Marker({
       map: this.map,
       animation: google.maps.Animation.DROP,
-      position: latLng
+      position: latLng,
+      title: item.title
+    });
+    marker.addListener('click', function () {
+      infowindow.open(this.map, marker);
     });
 
     this.markers.push(marker);

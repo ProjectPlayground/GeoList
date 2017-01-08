@@ -14,11 +14,9 @@ export class Locations {
   data: any;
   private usersLocation: Position;
   constructor(public http: Http, public storage: Storage, public dataService: Data, public maps: GoogleMaps) {
-
-
   }
 
-  updateList(item: any): any {
+  addItemToList(item: any): any {
     return new Promise(resolve => {
 
       if (!this.data) {
@@ -31,7 +29,7 @@ export class Locations {
         return locationA.distance - locationB.distance;
       });
 
-      this.maps.addMarker(item.lat, item.lng);
+      this.maps.addMarker(item);
 
       resolve(this.data);
     });
@@ -40,16 +38,28 @@ export class Locations {
   removeItemFromList(index: number): any {
     return new Promise(resolve => {
       this.data.splice(index, 1);
+      this.maps.deleteMarkers();
       if (this.data.length > 0) {
 
         this.dataService.save(this.data);
-        this.maps.deleteMarkers();
         for (let location of this.data) {
-          this.maps.addMarker(location.lat, location.lng);
+          this.maps.addMarker(location);
         }
       } else {
         this.dataService.removeData();
       }
+      resolve(this.data);
+    })
+  }
+
+  updateItemFromList(newItem: any, index: number): any {
+    return new Promise((resolve) => {
+
+      this.data.map((item, ind) => {
+        if (ind == index) {
+          this.data[ind] = newItem;
+        }
+      })
       resolve(this.data);
     })
   }

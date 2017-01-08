@@ -13,7 +13,6 @@ export class AddItemPage {
   private title: any;
   private tryingToGetLocation: boolean;
   constructor(public navCtrl: NavController, public view: ViewController, public geo: Geo, public params: NavParams) {
-    console.log(this.params.get("data"));
 
     this.item = new Item();
     if (this.params.get("data")) {

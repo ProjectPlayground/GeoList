@@ -18,6 +18,20 @@ ion-icon.add-icon.icon{
 }
 
 page-list{
+       .spinner-text{
+        text-align: center;
+        margin-top: 18em;
+    }
+    ion-spinner {
+        position: absolute;
+        top: 10em;
+        right: 35%;
+        width: 7em;
+        height: 7em;
+  stroke: #444;
+  fill: #222;
+    }   
+    
     .empty-list{
         text-align: center;
     font-size: 2em;

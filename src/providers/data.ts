@@ -8,8 +8,6 @@ export class Data {
 
   }
   removeData() {
-    console.log('removiendo');
-
     this.storage.remove('items');
   }
   getData() {
