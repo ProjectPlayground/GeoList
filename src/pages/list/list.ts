@@ -85,6 +85,12 @@ export class ListPage {
           }
         },
         {
+          text: 'Ir al destino',
+          handler: () => {
+            this.goToDestination(item);
+          }
+        },
+        {
           text: 'Editar Alias',
           handler: () => {
             this.editAlias(item, index);
@@ -108,17 +114,22 @@ export class ListPage {
     actionSheet.present(actionSheet);
   }
   goToDestination(item: any): void {
+    console.log(item);
 
-    51.5103807, -0.2329265
+
     let endPosition = {
-      lat: 51.5103807,
-      lng: -0.2329265
+      lat: item.lat,
+      lng: item.lng
     }
     let init = {
-      lat: 51.5081214,
-      lng: 0.1537587
+      lat: 0,
+      lng: 0
     }
-    this.maps.calcRoute(init, endPosition);
+    this.geo.getGeolocation().then(currentPosition => {
+      init.lat = currentPosition.getLatitude();
+      init.lng = currentPosition.getLongitude();
+      this.maps.calcRoute(init, endPosition);
+    })
   }
   saveItem(item): void {
     this.items.push(item);

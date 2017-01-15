@@ -6,8 +6,8 @@ declare var google;
 
 @Injectable()
 export class GoogleMaps {
-  private directionsDisplay = new google.maps.DirectionsRenderer();
-  private directionsService = new google.maps.DirectionsService();
+  private static directionsDisplay;
+  private static directionsService;
   mapElement: any;
   pleaseConnect: any;
   map: any;
@@ -118,9 +118,10 @@ export class GoogleMaps {
           mapTypeId: google.maps.MapTypeId.ROADMAP,
           styles: styleArray
         }
-
+        GoogleMaps.directionsDisplay = new google.maps.DirectionsRenderer;
+        GoogleMaps.directionsService = new google.maps.DirectionsService;
         this.map = new google.maps.Map(this.mapElement, mapOptions);
-        this.directionsDisplay.setMap(this.map);
+        GoogleMaps.directionsDisplay.setMap(this.map);
         resolve(true);
 
       });
@@ -136,9 +137,9 @@ export class GoogleMaps {
       destination: end,
       travelMode: google.maps.TravelMode.DRIVING
     };
-    this.directionsService.route(request, function (result, status) {
+    GoogleMaps.directionsService.route(request, function (result, status) {
       if (status == google.maps.DirectionsStatus.OK) {
-        this.directionsDisplay.setDirections(result);
+        GoogleMaps.directionsDisplay.setDirections(result);
       }
     });
   }
