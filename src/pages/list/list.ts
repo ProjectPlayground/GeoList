@@ -4,7 +4,7 @@ import { Locations } from '../../providers/locations';
 import { AddItemPage } from '../add-item-page/add-item-page'
 import { Data } from '../../providers/data';
 import { Geo } from '../../providers/geolocation';
-
+import { GoogleMaps } from '../../providers/google-maps';
 
 
 @Component({
@@ -19,6 +19,7 @@ export class ListPage {
   private tryingToGetLocation: boolean;
 
   constructor(
+    public maps: GoogleMaps,
     public navCtrl: NavController,
     public locations: Locations,
     public modalCtrl: ModalController,
@@ -105,6 +106,19 @@ export class ListPage {
     });
 
     actionSheet.present(actionSheet);
+  }
+  goToDestination(item: any): void {
+
+    51.5103807, -0.2329265
+    let endPosition = {
+      lat: 51.5103807,
+      lng: -0.2329265
+    }
+    let init = {
+      lat: 51.5081214,
+      lng: 0.1537587
+    }
+    this.maps.calcRoute(init, endPosition);
   }
   saveItem(item): void {
     this.items.push(item);

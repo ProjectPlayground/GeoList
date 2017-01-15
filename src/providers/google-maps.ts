@@ -6,7 +6,8 @@ declare var google;
 
 @Injectable()
 export class GoogleMaps {
-
+  private directionsDisplay = new google.maps.DirectionsRenderer();
+  private directionsService = new google.maps.DirectionsService();
   mapElement: any;
   pleaseConnect: any;
   map: any;
@@ -89,7 +90,6 @@ export class GoogleMaps {
     return new Promise((resolve) => {
 
       Geolocation.getCurrentPosition().then((position) => {
-
         let latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
         let styleArray = [
           {
@@ -120,12 +120,27 @@ export class GoogleMaps {
         }
 
         this.map = new google.maps.Map(this.mapElement, mapOptions);
+        this.directionsDisplay.setMap(this.map);
         resolve(true);
 
       });
 
     });
 
+  }
+
+  calcRoute(start, end) {
+
+    var request = {
+      origin: start,
+      destination: end,
+      travelMode: google.maps.TravelMode.DRIVING
+    };
+    this.directionsService.route(request, function (result, status) {
+      if (status == google.maps.DirectionsStatus.OK) {
+        this.directionsDisplay.setDirections(result);
+      }
+    });
   }
 
   disableMap(): void {
