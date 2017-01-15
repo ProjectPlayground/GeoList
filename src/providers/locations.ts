@@ -5,20 +5,19 @@ import { Storage } from '@ionic/storage';
 import { Position } from '../pages/clases/classes';
 import { Data } from '../providers/data';
 import { GoogleMaps } from '../providers/google-maps';
+import { MyApp } from '../app/app.component';
 
 
 
 @Injectable()
 export class Locations {
-
   data: any;
-  private usersLocation: Position;
+  public usersLocation: Position;
   constructor(public http: Http, public storage: Storage, public dataService: Data, public maps: GoogleMaps) {
   }
 
   addItemToList(item: any): any {
     return new Promise(resolve => {
-
       if (!this.data) {
         this.data = [];
       }
@@ -72,20 +71,32 @@ export class Locations {
     }
     return new Promise(resolve => {
 
-      this.dataService.getData().then((data) => {
-        if (data != null) {
-
-          this.data = JSON.parse(data);
+      if (MyApp.mock) {
+        this.http.get('assets/data/locations.json').map(res => res.json()).subscribe(data => {
+          this.data = data.locations
+          resolve(this.data);
           this.data = this.applyHaversine(this.data);
           this.data.sort((locationA, locationB) => {
             return locationA.distance - locationB.distance;
           });
-          resolve(this.data);
-        } else {
-          resolve(this.data);
+        });
+      } else {
+        this.dataService.getData().then((data) => {
+          console.log(data);
 
-        }
-      });
+          if (data !== null) {
+            this.data = JSON.parse(data);
+            this.data = this.applyHaversine(this.data);
+            this.data.sort((locationA, locationB) => {
+              return locationA.distance - locationB.distance;
+            });
+            resolve(this.data);
+          } else {
+            resolve(this.data);
+
+          }
+        });
+      }
 
     });
 
@@ -94,13 +105,19 @@ export class Locations {
   applyHaversine(locations) {
 
     locations.map((location) => {
+      if (MyApp.mock) {
+
+        this.usersLocation.setLatitude(40.713744)
+        this.usersLocation.setLongitude(-74.009056);
+
+      }
 
       let placeLocation: Position = new Position(location.lat, location.lng);
 
       location.distance = this.getDistanceBetweenPoints(
         this.usersLocation,
         placeLocation,
-        'miles'
+        'km'
       ).toFixed(2);
     });
 

@@ -1,3 +1,4 @@
+import { MyApp } from '../app/app.component';
 import { Injectable } from '@angular/core';
 import { Connectivity } from './connectivity';
 import { Geolocation } from 'ionic-native';
@@ -15,7 +16,7 @@ export class GoogleMaps {
   mapLoadedObserver: any;
   markers: any = [];
   apiKey: string;
-
+  directionsDisplay: any;
   constructor(public connectivityService: Connectivity) {
     this.apiKey = 'AIzaSyC6eiMjdQx1sCxlEGOqnh1_jgBzWSa8U5M';
 
@@ -81,16 +82,40 @@ export class GoogleMaps {
     });
 
   }
+  calculateAndDisplayRoute(directionsService, directionsDisplay, startLocation, endLocation) {
+
+
+    directionsService.route({
+      origin: startLocation,
+      destination: endLocation,
+      travelMode: google.maps.TravelMode.DRIVING
+    }, function (response, status) {
+      console.log(response, status);
+
+      if (status === google.maps.DirectionsStatus.OK) {
+        directionsDisplay.setDirections(response);
+      } else {
+        window.alert('Directions request failed due to ' + status);
+      }
+    });
+  }
 
   initMap(): Promise<any> {
 
     this.mapInitialised = true;
 
     return new Promise((resolve) => {
-
       Geolocation.getCurrentPosition().then((position) => {
+        let latLng;
+        if (MyApp.mock) {
+          latLng = new google.maps.LatLng(40.713744, -74.009056);
+        } else {
+          latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+        }
+        var directionsService = new google.maps.DirectionsService;
+        var directionsDisplay = new google.maps.DirectionsRenderer;
 
-        let latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+
         let styleArray = [
           {
             featureType: 'all',
@@ -120,6 +145,7 @@ export class GoogleMaps {
         }
 
         this.map = new google.maps.Map(this.mapElement, mapOptions);
+        directionsDisplay.setMap(this.map);
         resolve(true);
 
       });
@@ -182,7 +208,6 @@ export class GoogleMaps {
       content: item.title
     });
     let latLng = new google.maps.LatLng(item.lat, item.lng);
-
     let marker = new google.maps.Marker({
       map: this.map,
       animation: google.maps.Animation.DROP,

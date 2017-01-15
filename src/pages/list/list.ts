@@ -4,6 +4,8 @@ import { Locations } from '../../providers/locations';
 import { AddItemPage } from '../add-item-page/add-item-page'
 import { Data } from '../../providers/data';
 import { Geo } from '../../providers/geolocation';
+import { GoogleMaps } from '../../providers/google-maps';
+
 
 
 
@@ -14,11 +16,12 @@ import { Geo } from '../../providers/geolocation';
 export class ListPage {
 
   private items: any[] = new Array<any>();
-  private numOfItems: number = 0;
+  private numOfItems: number = 1;
   private hideListOfItems: boolean;
   private tryingToGetLocation: boolean;
 
   constructor(
+    public maps: GoogleMaps,
     public navCtrl: NavController,
     public locations: Locations,
     public modalCtrl: ModalController,
@@ -41,7 +44,6 @@ export class ListPage {
       this.hideListOfItems = false;
     } else {
       this.hideListOfItems = true;
-
     }
   }
 
@@ -59,9 +61,19 @@ export class ListPage {
         })
       }
     });
-
     addModal.present();
 
+  }
+  goToDestination(item: any): void {
+    51.5103807, -0.2329265
+    let endPosition = {
+      lat: 51.5103807,
+      lng: -0.2329265
+    }
+    let init = {
+      lat: 51.5081214,
+      lng: 0.1537587
+    }
   }
   removeItem(index): void {
     this.locations.removeItemFromList(index).then((newList) => {
@@ -77,6 +89,12 @@ export class ListPage {
       title: 'Selecciona una opción',
       buttons: [
         {
+          text: 'Ir al destino',
+          handler: () => {
+            this.goToDestination(item);
+          }
+        },
+        {
           text: 'Eliminar',
           role: 'destructive',
           handler: () => {
@@ -90,7 +108,7 @@ export class ListPage {
           }
         },
         {
-          text: 'Regeolocalizar',
+          text: 'Usar mi Ubicación actual',
           handler: () => {
             this.editGeolocation(item, index);
           }
@@ -106,12 +124,6 @@ export class ListPage {
 
     actionSheet.present(actionSheet);
   }
-  saveItem(item): void {
-    this.items.push(item);
-    this.hideListOfItems = false;
-    this.dataService.save(this.items);
-  }
-
 
   addItem(): void {
     let prompt = this.alertCtrl.create({
@@ -132,7 +144,9 @@ export class ListPage {
             this.tryingToGetLocation = true;
             this.geo.getGeolocation().then((ItemPosition) => {
               this.tryingToGetLocation = false;
-              if (title.title === undefined) {
+              console.log(title);
+
+              if (title.title === '') {
                 title.title = "Ubicación " + this.numOfItems.toString();
               }
               let item = {
