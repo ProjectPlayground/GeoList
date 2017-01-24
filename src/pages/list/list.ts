@@ -5,6 +5,8 @@ import { AddItemPage } from '../add-item-page/add-item-page'
 import { Data } from '../../providers/data';
 import { Geo } from '../../providers/geolocation';
 import { GoogleMaps } from '../../providers/google-maps';
+import { MapPage } from '../map/map';
+
 
 
 @Component({
@@ -114,9 +116,6 @@ export class ListPage {
     actionSheet.present(actionSheet);
   }
   goToDestination(item: any): void {
-    console.log(item);
-
-
     let endPosition = {
       lat: item.lat,
       lng: item.lng
@@ -125,10 +124,15 @@ export class ListPage {
       lat: 0,
       lng: 0
     }
+    this.tryingToGetLocation = true;
     this.geo.getGeolocation().then(currentPosition => {
       init.lat = currentPosition.getLatitude();
       init.lng = currentPosition.getLongitude();
-      this.maps.calcRoute(init, endPosition);
+      this.maps.calcRoute(init, endPosition).subscribe(
+        () => {
+          this.tryingToGetLocation = false;
+          this.navCtrl.setRoot(MapPage);
+        });
     })
   }
   saveItem(item): void {

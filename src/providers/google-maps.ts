@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Connectivity } from './connectivity';
 import { Geolocation } from 'ionic-native';
+import { Observable } from 'rxjs/Observable';
 
 declare var google;
 
@@ -8,25 +9,24 @@ declare var google;
 export class GoogleMaps {
   private static directionsDisplay;
   private static directionsService;
-  mapElement: any;
-  pleaseConnect: any;
-  map: any;
-  mapInitialised: boolean = false;
-  mapLoaded: any;
-  mapLoadedObserver: any;
-  markers: any = [];
-  apiKey: string;
+  static mapElement: any;
+  static pleaseConnect: any;
+  static map: any;
+  static mapInitialised: boolean = false;
+  static mapLoaded: any;
+  static mapLoadedObserver: any;
+  static markers: any = [];
+  static apiKey: string;
 
   constructor(public connectivityService: Connectivity) {
-    this.apiKey = 'AIzaSyC6eiMjdQx1sCxlEGOqnh1_jgBzWSa8U5M';
-
+    GoogleMaps.apiKey = 'AIzaSyC6eiMjdQx1sCxlEGOqnh1_jgBzWSa8U5M';
   }
 
 
   init(mapElement: any, pleaseConnect: any): Promise<any> {
 
-    this.mapElement = mapElement;
-    this.pleaseConnect = pleaseConnect;
+    GoogleMaps.mapElement = mapElement;
+    GoogleMaps.pleaseConnect = pleaseConnect;
 
     return this.loadGoogleMaps();
 
@@ -55,8 +55,8 @@ export class GoogleMaps {
           let script = document.createElement("script");
           script.id = "googleMaps";
 
-          if (this.apiKey) {
-            script.src = 'http://maps.google.com/maps/api/js?key=' + this.apiKey + '&callback=mapInit';
+          if (GoogleMaps.apiKey) {
+            script.src = 'http://maps.google.com/maps/api/js?key=' + GoogleMaps.apiKey + '&callback=mapInit';
           } else {
             script.src = 'http://maps.google.com/maps/api/js?callback=mapInit';
           }
@@ -85,7 +85,7 @@ export class GoogleMaps {
 
   initMap(): Promise<any> {
 
-    this.mapInitialised = true;
+    GoogleMaps.mapInitialised = true;
 
     return new Promise((resolve) => {
 
@@ -120,8 +120,8 @@ export class GoogleMaps {
         }
         GoogleMaps.directionsDisplay = new google.maps.DirectionsRenderer;
         GoogleMaps.directionsService = new google.maps.DirectionsService;
-        this.map = new google.maps.Map(this.mapElement, mapOptions);
-        GoogleMaps.directionsDisplay.setMap(this.map);
+        GoogleMaps.map = new google.maps.Map(GoogleMaps.mapElement, mapOptions);
+        GoogleMaps.directionsDisplay.setMap(GoogleMaps.map);
         resolve(true);
 
       });
@@ -131,31 +131,34 @@ export class GoogleMaps {
   }
 
   calcRoute(start, end) {
-
-    var request = {
-      origin: start,
-      destination: end,
-      travelMode: google.maps.TravelMode.DRIVING
-    };
-    GoogleMaps.directionsService.route(request, function (result, status) {
-      if (status == google.maps.DirectionsStatus.OK) {
-        GoogleMaps.directionsDisplay.setDirections(result);
-      }
-    });
+    let obs = new Observable(observer => {
+      var request = {
+        origin: start,
+        destination: end,
+        travelMode: google.maps.TravelMode.DRIVING
+      };
+      GoogleMaps.directionsService.route(request, function (result, status) {
+        if (status == google.maps.DirectionsStatus.OK) {
+          GoogleMaps.directionsDisplay.setDirections(result);
+          observer.next();
+        }
+      });
+    })
+    return obs;
   }
 
   disableMap(): void {
 
-    if (this.pleaseConnect) {
-      this.pleaseConnect.style.display = "block";
+    if (GoogleMaps.pleaseConnect) {
+      GoogleMaps.pleaseConnect.style.display = "block";
     }
 
   }
 
   enableMap(): void {
 
-    if (this.pleaseConnect) {
-      this.pleaseConnect.style.display = "none";
+    if (GoogleMaps.pleaseConnect) {
+      GoogleMaps.pleaseConnect.style.display = "none";
     }
 
   }
@@ -172,7 +175,7 @@ export class GoogleMaps {
           this.loadGoogleMaps();
         }
         else {
-          if (!this.mapInitialised) {
+          if (!GoogleMaps.mapInitialised) {
             this.initMap();
           }
 
@@ -200,7 +203,7 @@ export class GoogleMaps {
     let latLng = new google.maps.LatLng(item.lat, item.lng);
 
     let marker = new google.maps.Marker({
-      map: this.map,
+      map: GoogleMaps.map,
       animation: google.maps.Animation.DROP,
       position: latLng,
       title: item.title
@@ -209,12 +212,12 @@ export class GoogleMaps {
       infowindow.open(this.map, marker);
     });
 
-    this.markers.push(marker);
+    GoogleMaps.markers.push(marker);
 
   }
   setMapOnAll(map) {
-    for (var i = 0; i < this.markers.length; i++) {
-      this.markers[i].setMap(map);
+    for (var i = 0; i < GoogleMaps.markers.length; i++) {
+      GoogleMaps.markers[i].setMap(map);
     }
   }
   clearMarkers() {
@@ -222,7 +225,7 @@ export class GoogleMaps {
   }
   deleteMarkers() {
     this.clearMarkers();
-    this.markers = [];
+    GoogleMaps.markers = [];
   }
 
 
